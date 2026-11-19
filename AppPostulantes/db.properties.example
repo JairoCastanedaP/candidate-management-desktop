@@ -1,0 +1,5 @@
+# Copiar como db.properties y completar la contraseña.
+db.driver=oracle.jdbc.OracleDriver
+db.url=jdbc:oracle:thin:@//localhost:1522/FREEPDB1
+db.user=POSTULANTES
+db.password=CambiarEsta456

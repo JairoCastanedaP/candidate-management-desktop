@@ -58,19 +58,57 @@ erDiagram
     }
 ```
 
-Los scripts están en [`database/`](database) y se ejecutan en orden con el usuario dueño del esquema:
+Los scripts están en [`database/`](database) y se ejecutan en orden:
 
-| Script | Contenido |
-|---|---|
-| [`01-schema.sql`](database/01-schema.sql) | Tablas `UBIGEO` y `POSTULANTE`, restricciones y secuencia `SEQ_POSTULANTE` |
-| [`02-pkg-postulante.sql`](database/02-pkg-postulante.sql) | Paquete `PKG_POSTULANTE` con `SP_INSERTAR`, `SP_ACTUALIZAR` y `SP_BUSCAR` |
-| [`03-seed.sql`](database/03-seed.sql) | Ubigeos y postulantes de prueba |
+| Script | Usuario | Contenido |
+|---|---|---|
+| [`00-create-user.sql`](database/00-create-user.sql) | `SYSTEM` | Tablespace `POSTULANTES_DATA` y usuario `POSTULANTES` |
+| [`01-schema.sql`](database/01-schema.sql) | `POSTULANTES` | Tablas `UBIGEO` y `POSTULANTE`, restricciones y secuencia `SEQ_POSTULANTE` |
+| [`02-pkg-postulante.sql`](database/02-pkg-postulante.sql) | `POSTULANTES` | Paquete `PKG_POSTULANTE` con `SP_INSERTAR`, `SP_ACTUALIZAR` y `SP_BUSCAR` |
+| [`03-seed.sql`](database/03-seed.sql) | `POSTULANTES` | Ubigeos y postulantes de prueba |
+
+## Cómo ejecutar
+
+Requisitos: JDK 25, Apache NetBeans y Docker.
+
+**1. Levantar Oracle Database Free** (puerto `1522`):
+
+```bash
+cd database
+cp .env.example .env        # definir ORACLE_PWD y APP_PWD
+docker compose up -d
+```
+
+La primera vez tarda unos minutos; está lista cuando `docker ps` muestra el contenedor `candidate-management-oracle` como `healthy`.
+
+**2. Crear el usuario y el esquema:**
+
+```bash
+source .env
+docker cp . candidate-management-oracle:/tmp/db
+docker exec -it candidate-management-oracle sqlplus system/$ORACLE_PWD@//localhost:1521/FREEPDB1 @/tmp/db/00-create-user.sql $APP_PWD
+docker exec -it candidate-management-oracle sqlplus POSTULANTES/$APP_PWD@//localhost:1521/FREEPDB1 @/tmp/db/01-schema.sql
+docker exec -it candidate-management-oracle sqlplus POSTULANTES/$APP_PWD@//localhost:1521/FREEPDB1 @/tmp/db/02-pkg-postulante.sql
+docker exec -it candidate-management-oracle sqlplus POSTULANTES/$APP_PWD@//localhost:1521/FREEPDB1 @/tmp/db/03-seed.sql
+```
+
+Cada `sqlplus` queda en su consola al terminar el script; se sale con `exit`.
+
+**3. Configurar la conexión:** copiar `AppPostulantes/db.properties.example` como `AppPostulantes/db.properties` y poner la misma contraseña de `APP_PWD`.
+
+**4. Ejecutar:** abrir `AppPostulantes` en NetBeans y ejecutar con **F6**. El driver `ojdbc11` ya está incluido en `AppPostulantes/lib/`.
 
 ## Estructura
 
 ```
 candidate-management-desktop/
-├── database/        scripts SQL de Oracle
+├── database/                        scripts SQL y docker-compose de Oracle
+├── AppPostulantes/                  proyecto NetBeans (Ant)
+│   ├── lib/ojdbc11.jar              driver JDBC de Oracle
+│   ├── db.properties.example        plantilla de conexión
+│   └── src/com/co/java/core/
+│       ├── app/                     punto de entrada
+│       └── persistencia/util/       conexión, parámetros y excepción de base de datos
 └── README.md
 ```
 
@@ -79,6 +117,7 @@ candidate-management-desktop/
 | Módulo | Estado |
 |---|---|
 | Base de datos y procedimientos almacenados | ✅ |
+| Proyecto NetBeans y conexión JDBC | ✅ |
 | Capa de persistencia (JDBC) | ⏳ |
 | Validaciones | ⏳ |
 | Carga y búsqueda de ubigeo | ⏳ |
