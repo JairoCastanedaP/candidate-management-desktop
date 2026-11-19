@@ -1,0 +1,21 @@
+# Oracle Database Free para desarrollo local.
+# Uso (desde la carpeta database/):
+#   docker compose up -d        levanta la base de datos
+#   docker compose down         la detiene (los datos se conservan en el volumen)
+# Las contraseñas se leen de database/.env (ver .env.example).
+name: candidate-management
+
+services:
+  oracle:
+    image: container-registry.oracle.com/database/free:latest-lite
+    container_name: candidate-management-oracle
+    ports:
+      - "1522:1521"
+    environment:
+      ORACLE_PWD: ${ORACLE_PWD}
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+
+volumes:
+  oracle-data:
+    name: candidate-management-oracle-data
