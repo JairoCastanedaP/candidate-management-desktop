@@ -87,6 +87,7 @@ Los scripts están en [`database/`](database) y se ejecutan en orden:
 | [`02-pkg-postulante.sql`](database/02-pkg-postulante.sql) | `POSTULANTES` | Paquete `PKG_POSTULANTE` con `SP_INSERTAR`, `SP_ACTUALIZAR` y `SP_BUSCAR` |
 | [`03-departamentos.sql`](database/03-departamentos.sql) | `POSTULANTES` | Los 33 departamentos de Colombia con su indicativo de telefonía fija |
 | [`04-seed.sql`](database/04-seed.sql) | `POSTULANTES` | Municipios y postulantes de prueba |
+| [`05-municipios.sql`](database/05-municipios.sql) | `POSTULANTES` | Los 1.122 municipios de la DIVIPOLA del DANE ([datos.gov.co](https://www.datos.gov.co/d/gdxc-w37w)); se puede ejecutar varias veces |
 
 ## Cómo ejecutar
 
@@ -113,6 +114,7 @@ docker exec -it -e NLS_LANG candidate-management-oracle sqlplus POSTULANTES/$APP
 docker exec -it -e NLS_LANG candidate-management-oracle sqlplus POSTULANTES/$APP_PWD@//localhost:1521/FREEPDB1 @/tmp/db/02-pkg-postulante.sql
 docker exec -it -e NLS_LANG candidate-management-oracle sqlplus POSTULANTES/$APP_PWD@//localhost:1521/FREEPDB1 @/tmp/db/03-departamentos.sql
 docker exec -it -e NLS_LANG candidate-management-oracle sqlplus POSTULANTES/$APP_PWD@//localhost:1521/FREEPDB1 @/tmp/db/04-seed.sql
+docker exec -it -e NLS_LANG candidate-management-oracle sqlplus POSTULANTES/$APP_PWD@//localhost:1521/FREEPDB1 @/tmp/db/05-municipios.sql
 ```
 
 `NLS_LANG` hace que `sqlplus` lea los scripts en UTF-8, para que las tildes (BOYACÁ, MEDELLÍN) se guarden bien.
@@ -147,7 +149,7 @@ candidate-management-desktop/
 | Proyecto NetBeans y conexión JDBC | ✅ |
 | Capa de persistencia (JDBC) | ✅ |
 | Validaciones | ✅ |
-| Carga del catálogo completo de municipios (DIVIPOLA) | ⏳ |
+| Carga del catálogo completo de municipios (DIVIPOLA) | ✅ |
 | Interfaz Swing | ⏳ |
 
 ## Autor

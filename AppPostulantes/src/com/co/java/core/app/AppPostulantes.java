@@ -52,9 +52,9 @@ public class AppPostulantes {
         eliminar(id);
         listar();
 
-        titulo("Municipios: código \"15\" y nombre \"medellin\" sin tilde");
-        municipioDB.buscarXCodigo("15").forEach(System.out::println);
-        municipioDB.buscarXNombre("medellin").forEach(System.out::println);
+        titulo("Municipios: código \"1523\" y nombre \"san jose\" sin tilde");
+        municipioDB.buscarXCodigo("1523").forEach(System.out::println);
+        municipioDB.buscarXNombre("san jose").forEach(System.out::println);
     }
 
     /** Un caso por regla. Cada uno parte de un postulante válido y cambia un solo dato. */
