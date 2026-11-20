@@ -22,6 +22,18 @@ Aplicación de escritorio para gestionar postulantes: registro, actualización, 
 - Teléfonos con el formato colombiano: celular de 10 dígitos y fijo con el indicativo regional (601 a 608).
 - Selección de departamento y municipio desde el catálogo DIVIPOLA del DANE, con búsqueda por código o por nombre de municipio.
 
+### Reglas de validación
+
+Antes de registrar o actualizar, `ValidadorPostulante` quita espacios sobrantes, pasa los textos a mayúsculas y devuelve todos los errores juntos.
+
+| Dato | Regla |
+|---|---|
+| Nombres y apellidos | Entre 3 y 60 caracteres; solo letras, espacios y apóstrofo. El apellido materno es opcional. |
+| Documento | CC de 6 a 10 dígitos, TI de 10 a 11, CE de 6 a 7, PPT de 6 a 8 y PA de 5 a 9 letras o números. No se repite: el mensaje indica a quién pertenece. |
+| Correo | Validado sin expresiones regulares: una sola `@`, usuario y dominio válidos y extensión de al menos 2 letras. No se repite. |
+| Teléfonos | Al menos uno; solo dígitos, espacios, `-` y `()`. Celular de 10 dígitos que empieza por 3; fijo de 10 dígitos con el indicativo del departamento del municipio. |
+| Sexo | F o M. |
+
 ## Tecnologías
 
 | Tecnología | Uso |
@@ -122,7 +134,8 @@ candidate-management-desktop/
 │       ├── app/                     punto de entrada
 │       ├── bean/                    Postulante, Municipio y Departamento
 │       ├── persistencia/            interfaces DB e implementaciones JDBC
-│       └── persistencia/util/       conexión, parámetros y excepción de base de datos
+│       ├── persistencia/util/       conexión, parámetros y excepción de base de datos
+│       └── validacion/              reglas de negocio del postulante
 └── README.md
 ```
 
@@ -133,7 +146,7 @@ candidate-management-desktop/
 | Base de datos y procedimientos almacenados | ✅ |
 | Proyecto NetBeans y conexión JDBC | ✅ |
 | Capa de persistencia (JDBC) | ✅ |
-| Validaciones | ⏳ |
+| Validaciones | ✅ |
 | Carga del catálogo completo de municipios (DIVIPOLA) | ⏳ |
 | Interfaz Swing | ⏳ |
 
