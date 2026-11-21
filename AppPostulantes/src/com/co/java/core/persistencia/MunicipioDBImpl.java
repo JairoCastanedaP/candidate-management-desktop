@@ -27,6 +27,11 @@ public class MunicipioDBImpl implements MunicipioDB {
     }
 
     @Override
+    public List<Municipio> listarXDepartamento(String departamentoId) {
+        return consultar(SELECT_BASE + " WHERE M.DEPARTAMENTO_ID = ? ORDER BY M.NOMBRE", departamentoId);
+    }
+
+    @Override
     public List<Municipio> buscarXCodigo(String codigo) {
         String sql = SELECT_BASE + " WHERE M.MUNICIPIO_ID LIKE ? ORDER BY M.MUNICIPIO_ID";
         return consultar(sql, limpiar(codigo) + "%");
