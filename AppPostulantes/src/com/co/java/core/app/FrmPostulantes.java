@@ -10,7 +10,12 @@ import com.co.java.core.persistencia.MunicipioDBImpl;
 import com.co.java.core.persistencia.PostulanteDB;
 import com.co.java.core.persistencia.PostulanteDBImpl;
 import com.co.java.core.persistencia.util.DBException;
+import com.co.java.core.validacion.ValidadorPostulante;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
@@ -33,6 +38,14 @@ public class FrmPostulantes extends javax.swing.JFrame {
     private final PostulanteDB postulanteDB = new PostulanteDBImpl();
     private final DepartamentoDB departamentoDB = new DepartamentoDBImpl();
     private final MunicipioDB municipioDB = new MunicipioDBImpl();
+    private final ValidadorPostulante validador = new ValidadorPostulante(postulanteDB, municipioDB);
+
+    /** dd/MM/uuuu estricto: rechaza fechas que no existen, como 31/02/2000. */
+    private static final DateTimeFormatter FORMATO_FECHA =
+            DateTimeFormatter.ofPattern("dd/MM/uuuu").withResolverStyle(ResolverStyle.STRICT);
+
+    /** Id del postulante que se está editando; null cuando se registra uno nuevo. */
+    private Long idEditando = null;
 
     /** Postulantes que se ven en la tabla, en el mismo orden de las filas. */
     private List<Postulante> postulantes = new ArrayList<>();
@@ -119,6 +132,111 @@ public class FrmPostulantes extends javax.swing.JFrame {
             return m.getNombre();
         }
         return m.getNombre() + " (" + m.getDepartamento().getNombre() + ")";
+    }
+
+    // ------------------------------------------------------------------ registrar y actualizar
+
+    /**
+     * Lee el formulario, valida y registra (SP_INSERTAR) o actualiza (SP_ACTUALIZAR).
+     * Si hay errores, los muestra todos juntos y no guarda nada.
+     */
+    private void guardar() {
+        try {
+            List<String> errores = new ArrayList<>();
+            Postulante postulante = leerFormulario(errores);
+            List<String> erroresValidador = validador.validar(postulante);   // también consulta duplicados
+            if (!errores.isEmpty()) {
+                // la fecha ya tiene su propio mensaje: no repetir "es obligatoria"
+                erroresValidador.removeIf(e -> e.startsWith("La fecha de nacimiento"));
+            }
+            errores.addAll(erroresValidador);
+            if (!errores.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Revise los siguientes datos:\n\n• " + String.join("\n• ", errores),
+                        "Datos incompletos o no válidos", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            String mensaje;
+            if (idEditando == null) {
+                Long id = postulanteDB.insertar(postulante);
+                mensaje = "Postulante registrado con id " + id + ":\n" + postulante.getNombreCompleto();
+            } else {
+                postulanteDB.actualizar(postulante);
+                mensaje = "Postulante actualizado:\n" + postulante.getNombreCompleto();
+            }
+            JOptionPane.showMessageDialog(this, mensaje, "Guardar", JOptionPane.INFORMATION_MESSAGE);
+            limpiar();
+            buscar();
+        } catch (DBException e) {
+            mostrarError(e);
+        }
+    }
+
+    /**
+     * Arma el postulante con lo que hay en pantalla. Los combos muestran
+     * "CC - Cédula de ciudadanía" o "F - Femenino": se guarda solo el código.
+     * Si la fecha no es válida agrega el mensaje a errores y la deja en null.
+     */
+    private Postulante leerFormulario(List<String> errores) {
+        Postulante p = new Postulante();
+        p.setId(idEditando);
+        p.setNombres(txtNombres.getText());
+        p.setApellidoPaterno(txtApellidoPaterno.getText());
+        p.setApellidoMaterno(txtApellidoMaterno.getText());
+        p.setTipoDocumento(codigo((String) cboTipoDocumento.getSelectedItem()));
+        p.setNumeroDocumento(txtNumeroDocumento.getText());
+        p.setFechaNacimiento(leerFecha(errores));
+        p.setTelefonoFijo(txtTelefonoFijo.getText());
+        p.setTelefonoCelular(txtTelefonoCelular.getText());
+        p.setCorreo(txtCorreo.getText());
+        p.setSexo(cboSexo.getSelectedIndex() <= 0 ? null : codigo((String) cboSexo.getSelectedItem()));
+        p.setDireccion(txtDireccion.getText());
+        p.setMunicipio((Municipio) cboMunicipio.getSelectedItem());
+        return p;
+    }
+
+    /** "CC - Cédula de ciudadanía" → "CC" */
+    private static String codigo(String opcion) {
+        return opcion == null ? null : opcion.substring(0, opcion.indexOf(" - "));
+    }
+
+    private LocalDate leerFecha(List<String> errores) {
+        String texto = txtFechaNacimiento.getText();
+        if (texto.equals("__/__/____") || texto.isBlank()) {
+            return null;                       // el validador avisa que es obligatoria
+        }
+        if (texto.contains("_")) {
+            errores.add("La fecha de nacimiento está incompleta: use el formato dd/mm/aaaa.");
+            return null;
+        }
+        try {
+            return LocalDate.parse(texto, FORMATO_FECHA);
+        } catch (DateTimeParseException e) {
+            errores.add("La fecha de nacimiento " + texto + " no existe.");
+            return null;
+        }
+    }
+
+    /** Deja el formulario en blanco, listo para registrar un postulante nuevo. */
+    private void limpiar() {
+        idEditando = null;
+        txtNombres.setText("");
+        txtApellidoPaterno.setText("");
+        txtApellidoMaterno.setText("");
+        cboTipoDocumento.setSelectedIndex(0);
+        txtNumeroDocumento.setText("");
+        txtFechaNacimiento.setValue(null);
+        txtCorreo.setText("");
+        cboSexo.setSelectedIndex(0);
+        txtTelefonoFijo.setText("");
+        txtTelefonoCelular.setText("");
+        txtDireccion.setText("");
+        txtBuscarMunicipio.setText("");
+        cambiandoDepartamento = true;
+        cboDepartamento.setSelectedIndex(-1);
+        cambiandoDepartamento = false;
+        cargarMunicipios(null);
+        tblPostulantes.clearSelection();
+        txtNombres.requestFocusInWindow();
     }
 
     // ------------------------------------------------------------------ departamento y municipio
@@ -572,9 +690,19 @@ public class FrmPostulantes extends javax.swing.JFrame {
         pnlBotones.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
 
         btnNuevo.setText("Nuevo");
+        btnNuevo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnNuevoActionPerformed(evt);
+            }
+        });
         pnlBotones.add(btnNuevo);
 
         btnGuardar.setText("Guardar");
+        btnGuardar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGuardarActionPerformed(evt);
+            }
+        });
         pnlBotones.add(btnGuardar);
 
         btnEliminar.setText("Eliminar");
@@ -672,6 +800,14 @@ public class FrmPostulantes extends javax.swing.JFrame {
     private void btnBuscarMunicipioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarMunicipioActionPerformed
         buscarMunicipio();
     }//GEN-LAST:event_btnBuscarMunicipioActionPerformed
+
+    private void btnNuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNuevoActionPerformed
+        limpiar();
+    }//GEN-LAST:event_btnNuevoActionPerformed
+
+    private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
+        guardar();
+    }//GEN-LAST:event_btnGuardarActionPerformed
 
     /**
      * Permite abrir solo el formulario (Shift+F6). Normalmente lo abre AppPostulantes (F6).
