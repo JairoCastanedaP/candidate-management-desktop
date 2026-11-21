@@ -1,0 +1,32 @@
+# Compilados
+*.class
+out/
+bin/
+build/
+dist/
+target/
+
+# IntelliJ IDEA (se versiona la configuración del proyecto, no la del usuario)
+**/.idea/workspace.xml
+**/.idea/usage.statistics.xml
+**/.idea/shelf/
+**/.idea/tasks.xml
+**/.idea/dictionaries/
+
+# NetBeans
+**/nbproject/private/
+
+# Eclipse
+.metadata/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs y archivos temporales
+*.log
+*.tmp
+
+# Configuración local con contraseñas (se versionan los archivos .example)
+.env
+db.properties
