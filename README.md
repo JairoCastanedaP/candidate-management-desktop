@@ -122,7 +122,7 @@ Cada `sqlplus` queda en su consola al terminar el script; se sale con `exit`.
 
 **3. Configurar la conexión:** copiar `AppPostulantes/db.properties.example` como `AppPostulantes/db.properties` y poner la misma contraseña de `APP_PWD`.
 
-**4. Ejecutar:** abrir `AppPostulantes` en NetBeans y ejecutar con **F6**. El driver `ojdbc11` ya está incluido en `AppPostulantes/lib/`. Por ahora la aplicación recorre el CRUD en consola: registra, busca, actualiza y elimina un postulante de prueba.
+**4. Ejecutar:** abrir `AppPostulantes` en NetBeans y ejecutar con **F6**. El driver `ojdbc11` ya está incluido en `AppPostulantes/lib/`. Se abre el formulario de postulantes. La clase `PruebaConsola` (clic derecho → **Run File**) recorre en consola el CRUD y las validaciones sin interfaz gráfica.
 
 ## Estructura
 
@@ -133,7 +133,7 @@ candidate-management-desktop/
 │   ├── lib/ojdbc11.jar              driver JDBC de Oracle
 │   ├── db.properties.example        plantilla de conexión
 │   └── src/com/co/java/core/
-│       ├── app/                     punto de entrada
+│       ├── app/                     punto de entrada, formulario Swing y prueba en consola
 │       ├── bean/                    Postulante, Municipio y Departamento
 │       ├── persistencia/            interfaces DB e implementaciones JDBC
 │       ├── persistencia/util/       conexión, parámetros y excepción de base de datos
@@ -150,7 +150,7 @@ candidate-management-desktop/
 | Capa de persistencia (JDBC) | ✅ |
 | Validaciones | ✅ |
 | Carga del catálogo completo de municipios (DIVIPOLA) | ✅ |
-| Interfaz Swing | ⏳ |
+| Interfaz Swing | 🚧 en construcción |
 
 ## Autor
 

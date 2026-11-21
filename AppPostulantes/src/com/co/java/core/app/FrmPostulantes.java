@@ -1,6 +1,15 @@
 package com.co.java.core.app;
 
+import com.co.java.core.bean.Municipio;
+import com.co.java.core.bean.Postulante;
+import com.co.java.core.persistencia.PostulanteDB;
+import com.co.java.core.persistencia.PostulanteDBImpl;
+import com.co.java.core.persistencia.util.DBException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.MaskFormatter;
 
@@ -15,9 +24,16 @@ public class FrmPostulantes extends javax.swing.JFrame {
 
     private static final long serialVersionUID = 1L;
 
+    private final PostulanteDB postulanteDB = new PostulanteDBImpl();
+
+    /** Postulantes que se ven en la tabla, en el mismo orden de las filas. */
+    private List<Postulante> postulantes = new ArrayList<>();
+
     public FrmPostulantes() {
         initComponents();
         configurarFechaNacimiento();
+        configurarTabla();
+        listar();
     }
 
     /** Máscara dd/mm/aaaa: el usuario solo escribe los dígitos. */
@@ -29,6 +45,69 @@ public class FrmPostulantes extends javax.swing.JFrame {
         } catch (ParseException e) {
             throw new IllegalStateException("Máscara de fecha no válida", e);
         }
+    }
+
+    /** Ancho de cada columna: Id, Documento, Nombres, Ap. paterno, Ap. materno, Correo, Teléfono, Municipio. */
+    private void configurarTabla() {
+        int[] anchos = {40, 110, 130, 110, 110, 200, 100, 180};
+        for (int i = 0; i < anchos.length; i++) {
+            tblPostulantes.getColumnModel().getColumn(i).setPreferredWidth(anchos[i]);
+        }
+        tblPostulantes.getTableHeader().setReorderingAllowed(false);
+    }
+
+    // ------------------------------------------------------------------ listado y búsqueda
+
+    /** Carga todos los postulantes (consulta con PreparedStatement). */
+    private void listar() {
+        try {
+            mostrarEnTabla(postulanteDB.listar());
+        } catch (DBException e) {
+            mostrarError(e);
+        }
+    }
+
+    /** Busca por nombres o apellidos con PKG_POSTULANTE.SP_BUSCAR; vacío trae todos. */
+    private void buscar() {
+        try {
+            mostrarEnTabla(postulanteDB.buscar(txtBuscar.getText()));
+        } catch (DBException e) {
+            mostrarError(e);
+        }
+    }
+
+    private void mostrarEnTabla(List<Postulante> lista) {
+        postulantes = lista;
+        DefaultTableModel modelo = (DefaultTableModel) tblPostulantes.getModel();
+        modelo.setRowCount(0);
+        for (Postulante p : lista) {
+            modelo.addRow(new Object[]{
+                p.getId(),
+                p.getDocumento(),
+                p.getNombres(),
+                p.getApellidoPaterno(),
+                p.getApellidoMaterno(),
+                p.getCorreo(),
+                p.getTelefonoCelular() != null ? p.getTelefonoCelular() : p.getTelefonoFijo(),
+                nombreMunicipio(p.getMunicipio())
+            });
+        }
+        lblTotal.setText(lista.size() == 1 ? "1 postulante" : lista.size() + " postulantes");
+    }
+
+    /** "TUNJA (BOYACÁ)"; si el municipio y el departamento se llaman igual (Bogotá), solo el nombre. */
+    private String nombreMunicipio(Municipio m) {
+        if (m == null) {
+            return "";
+        }
+        if (m.getDepartamento() == null || m.getDepartamento().getNombre().equals(m.getNombre())) {
+            return m.getNombre();
+        }
+        return m.getNombre() + " (" + m.getDepartamento().getNombre() + ")";
+    }
+
+    private void mostrarError(Exception e) {
+        JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     /**
@@ -81,6 +160,7 @@ public class FrmPostulantes extends javax.swing.JFrame {
         lblBuscar = new javax.swing.JLabel();
         txtBuscar = new javax.swing.JTextField();
         btnBuscar = new javax.swing.JButton();
+        lblTotal = new javax.swing.JLabel();
         scrPostulantes = new javax.swing.JScrollPane();
         tblPostulantes = new javax.swing.JTable();
 
@@ -383,10 +463,24 @@ public class FrmPostulantes extends javax.swing.JFrame {
         pnlBusqueda.add(lblBuscar);
 
         txtBuscar.setColumns(30);
+        txtBuscar.setToolTipText("Escriba parte del nombre o apellido y presione Enter. Vacío muestra todos.");
+        txtBuscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtBuscarActionPerformed(evt);
+            }
+        });
         pnlBusqueda.add(txtBuscar);
 
         btnBuscar.setText("Buscar");
+        btnBuscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBuscarActionPerformed(evt);
+            }
+        });
         pnlBusqueda.add(btnBuscar);
+
+        lblTotal.setText("0 postulantes");
+        pnlBusqueda.add(lblTotal);
 
         pnlListado.add(pnlBusqueda, java.awt.BorderLayout.NORTH);
 
@@ -397,7 +491,7 @@ public class FrmPostulantes extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Id", "Documento", "Nombres", "Apellido paterno", "Apellido materno", "Correo", "Celular", "Municipio"
+                "Id", "Documento", "Nombres", "Apellido paterno", "Apellido materno", "Correo", "Teléfono", "Municipio"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -419,23 +513,20 @@ public class FrmPostulantes extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void txtBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBuscarActionPerformed
+        // Enter en la caja de búsqueda
+        buscar();
+    }//GEN-LAST:event_txtBuscarActionPerformed
+
+    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
+        buscar();
+    }//GEN-LAST:event_btnBuscarActionPerformed
+
     /**
-     * Permite abrir solo el formulario (Shift+F6) mientras se construye.
-     * En la fase final lo abrirá AppPostulantes.
+     * Permite abrir solo el formulario (Shift+F6). Normalmente lo abre AppPostulantes (F6).
      */
     public static void main(String args[]) {
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(FrmPostulantes.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-
-        java.awt.EventQueue.invokeLater(() -> new FrmPostulantes().setVisible(true));
+        AppPostulantes.main(args);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -463,6 +554,7 @@ public class FrmPostulantes extends javax.swing.JFrame {
     private javax.swing.JLabel lblTelefonoCelular;
     private javax.swing.JLabel lblTelefonoFijo;
     private javax.swing.JLabel lblTipoDocumento;
+    private javax.swing.JLabel lblTotal;
     private javax.swing.JPanel pnlBotones;
     private javax.swing.JPanel pnlBusqueda;
     private javax.swing.JPanel pnlDatos;
