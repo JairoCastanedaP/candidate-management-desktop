@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.MaskFormatter;
@@ -61,6 +62,7 @@ public class FrmPostulantes extends javax.swing.JFrame {
         configurarFechaNacimiento();
         configurarTabla();
         cargarDepartamentos();
+        btnEliminar.setEnabled(false);
         listar();
     }
 
@@ -82,6 +84,12 @@ public class FrmPostulantes extends javax.swing.JFrame {
             tblPostulantes.getColumnModel().getColumn(i).setPreferredWidth(anchos[i]);
         }
         tblPostulantes.getTableHeader().setReorderingAllowed(false);
+        // Al seleccionar una fila (con el mouse o con las flechas) se carga en el formulario
+        tblPostulantes.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                cargarSeleccionado();
+            }
+        });
     }
 
     // ------------------------------------------------------------------ listado y búsqueda
@@ -219,6 +227,8 @@ public class FrmPostulantes extends javax.swing.JFrame {
     /** Deja el formulario en blanco, listo para registrar un postulante nuevo. */
     private void limpiar() {
         idEditando = null;
+        btnEliminar.setEnabled(false);
+        titulo("Datos del postulante");
         txtNombres.setText("");
         txtApellidoPaterno.setText("");
         txtApellidoMaterno.setText("");
@@ -237,6 +247,85 @@ public class FrmPostulantes extends javax.swing.JFrame {
         cargarMunicipios(null);
         tblPostulantes.clearSelection();
         txtNombres.requestFocusInWindow();
+    }
+
+    // ------------------------------------------------------------------ editar y eliminar
+
+    /** Pasa el postulante de la fila seleccionada al formulario para editarlo. */
+    private void cargarSeleccionado() {
+        int fila = tblPostulantes.getSelectedRow();
+        if (fila < 0) {
+            return;
+        }
+        Postulante p = postulantes.get(fila);
+        idEditando = p.getId();
+        txtNombres.setText(p.getNombres());
+        txtApellidoPaterno.setText(p.getApellidoPaterno());
+        txtApellidoMaterno.setText(vacioSiNulo(p.getApellidoMaterno()));
+        seleccionarOpcion(cboTipoDocumento, p.getTipoDocumento());
+        txtNumeroDocumento.setText(p.getNumeroDocumento());
+        txtFechaNacimiento.setValue(p.getFechaNacimiento() == null ? null : p.getFechaNacimiento().format(FORMATO_FECHA));
+        txtCorreo.setText(p.getCorreo());
+        seleccionarOpcion(cboSexo, p.getSexo());
+        txtTelefonoFijo.setText(vacioSiNulo(p.getTelefonoFijo()));
+        txtTelefonoCelular.setText(vacioSiNulo(p.getTelefonoCelular()));
+        txtDireccion.setText(p.getDireccion());
+        txtBuscarMunicipio.setText("");
+        try {
+            seleccionarMunicipio(p.getMunicipio());
+        } catch (DBException e) {
+            mostrarError(e);
+        }
+        btnEliminar.setEnabled(true);
+        titulo("Editando postulante id " + p.getId() + " - " + p.getDocumento());
+    }
+
+    /** Pide confirmación y elimina el postulante que se está editando. */
+    private void eliminar() {
+        if (idEditando == null) {
+            JOptionPane.showMessageDialog(this, "Seleccione en la tabla el postulante que desea eliminar.",
+                    "Eliminar postulante", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        String materno = txtApellidoMaterno.getText().trim();
+        String nombre = txtApellidoPaterno.getText().trim() + (materno.isEmpty() ? "" : " " + materno)
+                + ", " + txtNombres.getText().trim();
+        int respuesta = JOptionPane.showConfirmDialog(this,
+                "¿Eliminar al postulante " + nombre + " (id " + idEditando + ")?\nEsta acción no se puede deshacer.",
+                "Eliminar postulante", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (respuesta != JOptionPane.YES_OPTION) {
+            return;
+        }
+        try {
+            postulanteDB.eliminar(idEditando);
+            JOptionPane.showMessageDialog(this, "Postulante eliminado.", "Eliminar postulante",
+                    JOptionPane.INFORMATION_MESSAGE);
+            limpiar();
+            buscar();
+        } catch (DBException e) {
+            mostrarError(e);
+        }
+    }
+
+    /** Selecciona en el combo la opción que empieza con el código: "CC" → "CC - Cédula de ciudadanía". */
+    private static void seleccionarOpcion(javax.swing.JComboBox<String> combo, String codigo) {
+        for (int i = 0; i < combo.getItemCount(); i++) {
+            if (combo.getItemAt(i).startsWith(codigo + " - ")) {
+                combo.setSelectedIndex(i);
+                return;
+            }
+        }
+        combo.setSelectedIndex(0);
+    }
+
+    private static String vacioSiNulo(String texto) {
+        return texto == null ? "" : texto;
+    }
+
+    /** Título del recuadro de datos: indica si se registra uno nuevo o se edita uno existente. */
+    private void titulo(String texto) {
+        ((TitledBorder) pnlDatos.getBorder()).setTitle(texto);
+        pnlDatos.repaint();
     }
 
     // ------------------------------------------------------------------ departamento y municipio
@@ -706,6 +795,11 @@ public class FrmPostulantes extends javax.swing.JFrame {
         pnlBotones.add(btnGuardar);
 
         btnEliminar.setText("Eliminar");
+        btnEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarActionPerformed(evt);
+            }
+        });
         pnlBotones.add(btnEliminar);
 
         pnlFormulario.add(pnlBotones, java.awt.BorderLayout.SOUTH);
@@ -808,6 +902,10 @@ public class FrmPostulantes extends javax.swing.JFrame {
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
         guardar();
     }//GEN-LAST:event_btnGuardarActionPerformed
+
+    private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
+        eliminar();
+    }//GEN-LAST:event_btnEliminarActionPerformed
 
     /**
      * Permite abrir solo el formulario (Shift+F6). Normalmente lo abre AppPostulantes (F6).
