@@ -1,13 +1,19 @@
 package com.co.java.core.app;
 
+import com.co.java.core.bean.Departamento;
 import com.co.java.core.bean.Municipio;
 import com.co.java.core.bean.Postulante;
+import com.co.java.core.persistencia.DepartamentoDB;
+import com.co.java.core.persistencia.DepartamentoDBImpl;
+import com.co.java.core.persistencia.MunicipioDB;
+import com.co.java.core.persistencia.MunicipioDBImpl;
 import com.co.java.core.persistencia.PostulanteDB;
 import com.co.java.core.persistencia.PostulanteDBImpl;
 import com.co.java.core.persistencia.util.DBException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.DefaultFormatterFactory;
@@ -25,14 +31,23 @@ public class FrmPostulantes extends javax.swing.JFrame {
     private static final long serialVersionUID = 1L;
 
     private final PostulanteDB postulanteDB = new PostulanteDBImpl();
+    private final DepartamentoDB departamentoDB = new DepartamentoDBImpl();
+    private final MunicipioDB municipioDB = new MunicipioDBImpl();
 
     /** Postulantes que se ven en la tabla, en el mismo orden de las filas. */
     private List<Postulante> postulantes = new ArrayList<>();
+
+    /**
+     * true mientras el código cambia el departamento seleccionado, para que el
+     * evento del combo no recargue los municipios una vez más.
+     */
+    private boolean cambiandoDepartamento = false;
 
     public FrmPostulantes() {
         initComponents();
         configurarFechaNacimiento();
         configurarTabla();
+        cargarDepartamentos();
         listar();
     }
 
@@ -104,6 +119,105 @@ public class FrmPostulantes extends javax.swing.JFrame {
             return m.getNombre();
         }
         return m.getNombre() + " (" + m.getDepartamento().getNombre() + ")";
+    }
+
+    // ------------------------------------------------------------------ departamento y municipio
+
+    /** Llena el combo de departamentos y lo deja sin selección. */
+    private void cargarDepartamentos() {
+        cambiandoDepartamento = true;
+        try {
+            DefaultComboBoxModel<Departamento> modelo = new DefaultComboBoxModel<>();
+            departamentoDB.listar().forEach(modelo::addElement);
+            cboDepartamento.setModel(modelo);
+            cboDepartamento.setSelectedIndex(-1);
+        } catch (DBException e) {
+            mostrarError(e);
+        } finally {
+            cambiandoDepartamento = false;
+        }
+    }
+
+    /** Llena el combo de municipios con los del departamento indicado y lo deja sin selección. */
+    private void cargarMunicipios(Departamento departamento) {
+        DefaultComboBoxModel<Municipio> modelo = new DefaultComboBoxModel<>();
+        if (departamento != null) {
+            municipioDB.listarXDepartamento(departamento.getDepartamentoId()).forEach(modelo::addElement);
+        }
+        cboMunicipio.setModel(modelo);
+        cboMunicipio.setSelectedIndex(-1);
+    }
+
+    /**
+     * Busca municipios por código DIVIPOLA (si el texto son solo dígitos) o por nombre
+     * (sin mayúsculas ni tildes). Si hay uno, lo selecciona; si hay varios, pide elegir.
+     */
+    private void buscarMunicipio() {
+        String texto = txtBuscarMunicipio.getText().trim();
+        if (texto.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Escriba un código DIVIPOLA (por ejemplo 15001) o parte del nombre del municipio.",
+                    "Buscar municipio", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        try {
+            List<Municipio> encontrados = soloDigitos(texto)
+                    ? municipioDB.buscarXCodigo(texto)
+                    : municipioDB.buscarXNombre(texto);
+            if (encontrados.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "No se encontró ningún municipio con \"" + texto + "\".",
+                        "Buscar municipio", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            Municipio elegido = encontrados.size() == 1 ? encontrados.get(0) : elegirMunicipio(encontrados, texto);
+            if (elegido != null) {
+                seleccionarMunicipio(elegido);
+            }
+        } catch (DBException e) {
+            mostrarError(e);
+        }
+    }
+
+    /** Muestra la lista de municipios encontrados; devuelve el elegido o null si se cancela. */
+    private Municipio elegirMunicipio(List<Municipio> encontrados, String texto) {
+        Municipio[] opciones = encontrados.toArray(new Municipio[0]);
+        return (Municipio) JOptionPane.showInputDialog(this,
+                "Se encontraron " + opciones.length + " municipios para \"" + texto + "\". Seleccione uno:",
+                "Buscar municipio", JOptionPane.QUESTION_MESSAGE, null, opciones, opciones[0]);
+    }
+
+    /**
+     * Selecciona el departamento del municipio, carga sus municipios y deja elegido el indicado.
+     * También se usará al cargar un postulante de la tabla para editarlo.
+     */
+    private void seleccionarMunicipio(Municipio municipio) {
+        String departamentoId = municipio.getDepartamento().getDepartamentoId();
+        cambiandoDepartamento = true;
+        try {
+            for (int i = 0; i < cboDepartamento.getItemCount(); i++) {
+                if (cboDepartamento.getItemAt(i).getDepartamentoId().equals(departamentoId)) {
+                    cboDepartamento.setSelectedIndex(i);
+                    break;
+                }
+            }
+        } finally {
+            cambiandoDepartamento = false;
+        }
+        cargarMunicipios((Departamento) cboDepartamento.getSelectedItem());
+        for (int i = 0; i < cboMunicipio.getItemCount(); i++) {
+            if (cboMunicipio.getItemAt(i).getMunicipioId().equals(municipio.getMunicipioId())) {
+                cboMunicipio.setSelectedIndex(i);
+                break;
+            }
+        }
+    }
+
+    private static boolean soloDigitos(String texto) {
+        for (char c : texto.toCharArray()) {
+            if (c < '0' || c > '9') {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void mostrarError(Exception e) {
@@ -383,6 +497,12 @@ public class FrmPostulantes extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
         pnlDatos.add(lblDepartamento, gridBagConstraints);
 
+        cboDepartamento.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cboDepartamentoActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -419,6 +539,11 @@ public class FrmPostulantes extends javax.swing.JFrame {
 
         txtBuscarMunicipio.setColumns(20);
         txtBuscarMunicipio.setToolTipText("Código DIVIPOLA (por ejemplo 15001) o parte del nombre (por ejemplo tunja)");
+        txtBuscarMunicipio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtBuscarMunicipioActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
@@ -429,6 +554,11 @@ public class FrmPostulantes extends javax.swing.JFrame {
         pnlDatos.add(txtBuscarMunicipio, gridBagConstraints);
 
         btnBuscarMunicipio.setText("Buscar por código o nombre");
+        btnBuscarMunicipio.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBuscarMunicipioActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 7;
@@ -521,6 +651,27 @@ public class FrmPostulantes extends javax.swing.JFrame {
     private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
         buscar();
     }//GEN-LAST:event_btnBuscarActionPerformed
+
+    private void cboDepartamentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cboDepartamentoActionPerformed
+        // El usuario cambió de departamento: se muestran solo sus municipios
+        if (cambiandoDepartamento) {
+            return;
+        }
+        try {
+            cargarMunicipios((Departamento) cboDepartamento.getSelectedItem());
+        } catch (DBException e) {
+            mostrarError(e);
+        }
+    }//GEN-LAST:event_cboDepartamentoActionPerformed
+
+    private void txtBuscarMunicipioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBuscarMunicipioActionPerformed
+        // Enter en la caja de búsqueda de municipio
+        buscarMunicipio();
+    }//GEN-LAST:event_txtBuscarMunicipioActionPerformed
+
+    private void btnBuscarMunicipioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarMunicipioActionPerformed
+        buscarMunicipio();
+    }//GEN-LAST:event_btnBuscarMunicipioActionPerformed
 
     /**
      * Permite abrir solo el formulario (Shift+F6). Normalmente lo abre AppPostulantes (F6).
