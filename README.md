@@ -8,9 +8,11 @@ Aplicación de escritorio para gestionar postulantes: registro, actualización, 
 ![Swing](https://img.shields.io/badge/UI-Swing-5382A1)
 ![JDBC](https://img.shields.io/badge/JDBC-ojdbc-F80000)
 ![Oracle](https://img.shields.io/badge/Oracle-Database-F80000?logo=oracle&logoColor=white)
-![Estado](https://img.shields.io/badge/estado-en%20desarrollo-yellow)
+![Versión](https://img.shields.io/badge/versi%C3%B3n-1.0-2ea44f)
 
 </div>
+
+![Formulario de postulantes](docs/img/formulario.png)
 
 ## Funcionalidades
 
@@ -33,6 +35,28 @@ Antes de registrar o actualizar, `ValidadorPostulante` quita espacios sobrantes,
 | Correo | Validado sin expresiones regulares: una sola `@`, usuario y dominio válidos y extensión de al menos 2 letras. No se repite. |
 | Teléfonos | Al menos uno; solo dígitos, espacios, `-` y `()`. Celular de 10 dígitos que empieza por 3; fijo de 10 dígitos con el indicativo del departamento del municipio. |
 | Sexo | F o M. |
+
+## Uso del formulario
+
+| Acción | Cómo |
+|---|---|
+| Registrar | Llenar los datos y pulsar **Guardar**. Si algo no es válido, aparecen todos los errores juntos y no se guarda nada. |
+| Buscar | Escribir parte del nombre o de un apellido y pulsar **Buscar** o Enter (sin tildes ni mayúsculas). Vacío muestra todos. |
+| Editar | Seleccionar la fila en la tabla: sus datos pasan al formulario. Cambiar lo necesario y pulsar **Guardar**. |
+| Eliminar | Seleccionar la fila y pulsar **Eliminar**; pide confirmación. |
+| Municipio | Elegir el departamento y luego el municipio, o escribir un código DIVIPOLA (`15001`) o parte del nombre (`tunja`) y pulsar **Buscar por código o nombre**. |
+| Empezar de nuevo | **Nuevo** limpia el formulario. |
+
+<table>
+  <tr>
+    <td><img src="docs/img/editar.png" alt="Editando un postulante seleccionado en la tabla"></td>
+    <td><img src="docs/img/errores.png" alt="Errores de validación mostrados juntos"></td>
+  </tr>
+  <tr>
+    <td align="center">Edición de un postulante</td>
+    <td align="center">Errores de validación</td>
+  </tr>
+</table>
 
 ## Tecnologías
 
@@ -129,6 +153,7 @@ Cada `sqlplus` queda en su consola al terminar el script; se sale con `exit`.
 ```
 candidate-management-desktop/
 ├── database/                        scripts SQL y docker-compose de Oracle
+├── docs/img/                        capturas de pantalla
 ├── AppPostulantes/                  proyecto NetBeans (Ant)
 │   ├── lib/ojdbc11.jar              driver JDBC de Oracle
 │   ├── db.properties.example        plantilla de conexión
@@ -150,7 +175,7 @@ candidate-management-desktop/
 | Capa de persistencia (JDBC) | ✅ |
 | Validaciones | ✅ |
 | Carga del catálogo completo de municipios (DIVIPOLA) | ✅ |
-| Interfaz Swing | 🚧 en construcción |
+| Interfaz Swing | ✅ |
 
 ## Autor
 

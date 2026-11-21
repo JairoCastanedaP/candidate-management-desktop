@@ -64,6 +64,8 @@ public class FrmPostulantes extends javax.swing.JFrame {
         cargarDepartamentos();
         btnEliminar.setEnabled(false);
         listar();
+        // No dejar achicar la ventana por debajo del tamaño en que se ven todos los campos
+        setMinimumSize(getSize());
     }
 
     /** Máscara dd/mm/aaaa: el usuario solo escribe los dígitos. */
@@ -445,16 +447,16 @@ public class FrmPostulantes extends javax.swing.JFrame {
         pnlDatos = new javax.swing.JPanel();
         lblNombres = new javax.swing.JLabel();
         txtNombres = new javax.swing.JTextField();
-        lblTipoDocumento = new javax.swing.JLabel();
-        cboTipoDocumento = new javax.swing.JComboBox<>();
         lblApellidoPaterno = new javax.swing.JLabel();
         txtApellidoPaterno = new javax.swing.JTextField();
-        lblNumeroDocumento = new javax.swing.JLabel();
-        txtNumeroDocumento = new javax.swing.JTextField();
         lblApellidoMaterno = new javax.swing.JLabel();
         txtApellidoMaterno = new javax.swing.JTextField();
         lblFechaNacimiento = new javax.swing.JLabel();
         txtFechaNacimiento = new javax.swing.JFormattedTextField();
+        lblTipoDocumento = new javax.swing.JLabel();
+        cboTipoDocumento = new javax.swing.JComboBox<>();
+        lblNumeroDocumento = new javax.swing.JLabel();
+        txtNumeroDocumento = new javax.swing.JTextField();
         lblCorreo = new javax.swing.JLabel();
         txtCorreo = new javax.swing.JTextField();
         lblSexo = new javax.swing.JLabel();
@@ -465,13 +467,13 @@ public class FrmPostulantes extends javax.swing.JFrame {
         txtTelefonoCelular = new javax.swing.JTextField();
         lblDireccion = new javax.swing.JLabel();
         txtDireccion = new javax.swing.JTextField();
+        lblBuscarMunicipio = new javax.swing.JLabel();
+        txtBuscarMunicipio = new javax.swing.JTextField();
+        btnBuscarMunicipio = new javax.swing.JButton();
         lblDepartamento = new javax.swing.JLabel();
         cboDepartamento = new javax.swing.JComboBox<>();
         lblMunicipio = new javax.swing.JLabel();
         cboMunicipio = new javax.swing.JComboBox<>();
-        lblBuscarMunicipio = new javax.swing.JLabel();
-        txtBuscarMunicipio = new javax.swing.JTextField();
-        btnBuscarMunicipio = new javax.swing.JButton();
         pnlBotones = new javax.swing.JPanel();
         btnNuevo = new javax.swing.JButton();
         btnGuardar = new javax.swing.JButton();
@@ -511,65 +513,28 @@ public class FrmPostulantes extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
         pnlDatos.add(txtNombres, gridBagConstraints);
 
-        lblTipoDocumento.setText("Tipo de documento:");
+        lblApellidoPaterno.setText("Apellido paterno:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
-        pnlDatos.add(lblTipoDocumento, gridBagConstraints);
-
-        cboTipoDocumento.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "CC - Cédula de ciudadanía", "TI - Tarjeta de identidad", "CE - Cédula de extranjería", "PA - Pasaporte", "PPT - Permiso por protección temporal" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
-        pnlDatos.add(cboTipoDocumento, gridBagConstraints);
-
-        lblApellidoPaterno.setText("Apellido paterno:");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
         pnlDatos.add(lblApellidoPaterno, gridBagConstraints);
 
         txtApellidoPaterno.setColumns(20);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
         pnlDatos.add(txtApellidoPaterno, gridBagConstraints);
 
-        lblNumeroDocumento.setText("Número de documento:");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
-        pnlDatos.add(lblNumeroDocumento, gridBagConstraints);
-
-        txtNumeroDocumento.setColumns(20);
-        txtNumeroDocumento.setToolTipText("Solo dígitos, sin puntos ni espacios (pasaporte: letras y números)");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
-        pnlDatos.add(txtNumeroDocumento, gridBagConstraints);
-
         lblApellidoMaterno.setText("Apellido materno:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
         pnlDatos.add(lblApellidoMaterno, gridBagConstraints);
@@ -578,7 +543,7 @@ public class FrmPostulantes extends javax.swing.JFrame {
         txtApellidoMaterno.setToolTipText("Opcional");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
@@ -588,7 +553,7 @@ public class FrmPostulantes extends javax.swing.JFrame {
         lblFechaNacimiento.setText("Fecha de nacimiento:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
         pnlDatos.add(lblFechaNacimiento, gridBagConstraints);
@@ -596,12 +561,49 @@ public class FrmPostulantes extends javax.swing.JFrame {
         txtFechaNacimiento.setToolTipText("Formato dd/mm/aaaa, por ejemplo 15/03/2000");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
         gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
         pnlDatos.add(txtFechaNacimiento, gridBagConstraints);
+
+        lblTipoDocumento.setText("Tipo de documento:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
+        pnlDatos.add(lblTipoDocumento, gridBagConstraints);
+
+        cboTipoDocumento.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "CC - Cédula de ciudadanía", "TI - Tarjeta de identidad", "CE - Cédula de extranjería", "PA - Pasaporte", "PPT - Permiso por protección temporal" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
+        pnlDatos.add(cboTipoDocumento, gridBagConstraints);
+
+        lblNumeroDocumento.setText("Número de documento:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
+        pnlDatos.add(lblNumeroDocumento, gridBagConstraints);
+
+        txtNumeroDocumento.setColumns(20);
+        txtNumeroDocumento.setToolTipText("Solo dígitos, sin puntos ni espacios (pasaporte: letras y números)");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
+        pnlDatos.add(txtNumeroDocumento, gridBagConstraints);
 
         lblCorreo.setText("Correo:");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -696,50 +698,10 @@ public class FrmPostulantes extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
         pnlDatos.add(txtDireccion, gridBagConstraints);
 
-        lblDepartamento.setText("Departamento:");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
-        pnlDatos.add(lblDepartamento, gridBagConstraints);
-
-        cboDepartamento.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cboDepartamentoActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
-        pnlDatos.add(cboDepartamento, gridBagConstraints);
-
-        lblMunicipio.setText("Municipio:");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
-        pnlDatos.add(lblMunicipio, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
-        pnlDatos.add(cboMunicipio, gridBagConstraints);
-
         lblBuscarMunicipio.setText("Buscar municipio:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
         pnlDatos.add(lblBuscarMunicipio, gridBagConstraints);
@@ -753,7 +715,7 @@ public class FrmPostulantes extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.5;
@@ -768,11 +730,51 @@ public class FrmPostulantes extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
         pnlDatos.add(btnBuscarMunicipio, gridBagConstraints);
+
+        lblDepartamento.setText("Departamento:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
+        pnlDatos.add(lblDepartamento, gridBagConstraints);
+
+        cboDepartamento.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cboDepartamentoActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
+        pnlDatos.add(cboDepartamento, gridBagConstraints);
+
+        lblMunicipio.setText("Municipio:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
+        pnlDatos.add(lblMunicipio, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(4, 6, 4, 6);
+        pnlDatos.add(cboMunicipio, gridBagConstraints);
 
         pnlFormulario.add(pnlDatos, java.awt.BorderLayout.CENTER);
 
